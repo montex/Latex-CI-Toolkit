@@ -28,12 +28,11 @@ if [ ! $BASELINE ]; then export BASELINE=$DIFFCOMMIT; fi;
 for FILE in ${FILENAMES[@]}; do
   latexpand $FILE.tex > ${FILE}.tex.expanded;
   mv ${FILE}.tex.expanded ${FILE}.tex;
-  latexmk -pdf $FILE -interaction=nonstopmode;
 done;
 for REFCOMMIT in $BASELINE; do
   git clone . $REFCOMMIT;
   cd $REFCOMMIT;
-  git reset --hard $REFCOMMIT;
+  git checkout $REFCOMMIT;
   for FILE in ${FILENAMES[@]}; do
     latexpand $FILE.tex > ${FILE}.tex.expanded;
     mv ${FILE}.tex.expanded ${FILE}.tex;
