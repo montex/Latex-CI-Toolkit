@@ -1,0 +1,50 @@
+#!/bin/bash
+# Copyright (C) 2019
+# Leonardo Montecchi
+# leonardo@ic.unicamp.br
+#
+# [latex-commit-diff]
+# A simple bash script to automate the generation of pdf with tracked changes from
+# a git repository containing latex files. It uses (and thus requires) latexdiff.
+#
+# The script is thought to be used in GitLab CI environment. As such, it receives
+# parameters by means of environment variables. The following parameters are supported:
+#
+# BASELINE: The list of commits or tags that should be used as reference for creating the
+#           diff (i.e., the commit(s) containing the old version(s)). If more than one
+#           commit is specified, the script will create a pdf with tracked changes for
+#           each of them. If nothing is specified, the previous tag in the reposiory will
+#           be used as reference.
+#
+# TEXFILES: The list of TeX files for which the pdf with tracked changes will be generated.
+#           If more than one file is specified, the script will create a pdf with tracked
+#           changes for each of them. It nothing is specified, all the .tex files in the
+#           repository root are processed.
+
+if [ ! $TEXFILES ]; then export TEXFILES=(*.tex); fi;
+export FILENAMES=${TEXFILES[@]/.tex}
+export DIFFCOMMIT=`git describe --abbrev=0 --tags --always`
+if [ ! $BASELINE ]; then export BASELINE=$DIFFCOMMIT; fi;
+for FILE in ${FILENAMES[@]}; do
+  latexpand $FILE.tex > ${FILE}.tex.expanded;
+  mv ${FILE}.tex.expanded ${FILE}.tex;
+done;
+for REFCOMMIT in $BASELINE; do
+  git clone . $REFCOMMIT;
+  cd $REFCOMMIT;
+  git checkout $REFCOMMIT;
+  for FILE in ${FILENAMES[@]}; do
+    latexpand $FILE.tex > ${FILE}.tex.expanded;
+    mv ${FILE}.tex.expanded ${FILE}.tex;
+    latexmk -interaction=nonstopmode -f -pdf $FILE;
+  done
+  cd ..;
+  for FILE in ${FILENAMES[@]}; do
+    latexdiff ${REFCOMMIT}/${FILE}.tex ${FILE}.tex > ${FILE}_diff_${REFCOMMIT}.tex;
+    if [ ! $SKIPBIB ]; then
+      latexdiff ${REFCOMMIT}/${FILE}.bbl ${FILE}.bbl > ${FILE}_diff_${REFCOMMIT}.bbl;
+    fi;
+    latexmk -interaction=nonstopmode -f -pdf ${FILE}_diff_${REFCOMMIT}.tex -interaction=nonstopmode;
+    ln -f ${FILE}_diff_${REFCOMMIT}.pdf ${FILE}_diff.pdf;
+  done;
+done;
