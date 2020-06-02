@@ -21,10 +21,27 @@
 #           changes for each of them. It nothing is specified, all the .tex files in the
 #           repository root are processed.
 
+DIFFREFCONFIGFILE=".diffref";
 if [ ! $TEXFILES ]; then export TEXFILES=(*.tex); fi;
 export FILENAMES=${TEXFILES[@]/.tex}
-export DIFFCOMMIT=`git describe --abbrev=0 --tags --always`
-if [ ! $BASELINE ]; then export BASELINE=$DIFFCOMMIT; fi;
+export PREVIOUSTAG=`git describe --abbrev=0 --tags --always`
+
+# If the reference commit is not specified as a CI variable
+if [ ! $BASELINE ]; then
+  # Use the commit in the configuration file in the tree if available
+  if [ -f $DIFFREFCONFIGFILE ]; then
+    FILECONTENT=`cat $DIFFREFCONFIGFILE`;
+    for SHA in $FILECONTENT; do
+      if git cat-file -e $SHA; then
+        BASELINE+="$SHA ";
+      fi
+    done;
+  else
+    # Otherwise, use as default the previous tag in the repository
+    BASELINE=$PREVIOUSTAG;
+  fi
+fi;
+
 for FILE in ${FILENAMES[@]}; do
   latexpand $FILE.tex > ${FILE}.tex.expanded;
   mv ${FILE}.tex.expanded ${FILE}.tex;
