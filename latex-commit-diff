@@ -45,6 +45,7 @@ fi;
 for FILE in ${FILENAMES[@]}; do
   latexpand $FILE.tex > ${FILE}.tex.expanded;
   mv ${FILE}.tex.expanded ${FILE}.tex;
+  latexmk -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
 done;
 for REFCOMMIT in $BASELINE; do
   git clone . $REFCOMMIT;
@@ -53,7 +54,7 @@ for REFCOMMIT in $BASELINE; do
   for FILE in ${FILENAMES[@]}; do
     latexpand $FILE.tex > ${FILE}.tex.expanded;
     mv ${FILE}.tex.expanded ${FILE}.tex;
-    latexmk -interaction=nonstopmode -f -pdf $FILE;
+    latexmk -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
   done
   cd ..;
   for FILE in ${FILENAMES[@]}; do
@@ -61,7 +62,7 @@ for REFCOMMIT in $BASELINE; do
     if [ ! $SKIPBIB ]; then
       latexdiff ${REFCOMMIT}/${FILE}.bbl ${FILE}.bbl > ${FILE}_diff_${REFCOMMIT}.bbl;
     fi;
-    latexmk -interaction=nonstopmode -f -pdf ${FILE}_diff_${REFCOMMIT}.tex -interaction=nonstopmode;
+    latexmk -bibtex- -interaction=nonstopmode -f -pdf ${FILE}_diff_${REFCOMMIT}.tex;
     ln -f ${FILE}_diff_${REFCOMMIT}.pdf ${FILE}_diff.pdf;
   done;
 done;
