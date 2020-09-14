@@ -47,6 +47,7 @@ for FILE in ${FILENAMES[@]}; do
   mv ${FILE}.tex.expanded ${FILE}.tex;
   latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
 done;
+mkdir diffoutput;
 for REFCOMMIT in $BASELINE; do
   git clone . $REFCOMMIT;
   cd $REFCOMMIT;
@@ -64,5 +65,7 @@ for REFCOMMIT in $BASELINE; do
     fi;
     latexmk -cd -bibtex- -interaction=nonstopmode -f -pdf ${FILE}_diff_${REFCOMMIT}.tex;
     ln -f ${FILE}_diff_${REFCOMMIT}.pdf ${FILE}_diff.pdf;
+    mv ${FILE}_diff_${REFCOMMIT}.pdf diffoutput;
+    mv ${FILE}_diff.pdf diffoutput;
   done;
 done;
