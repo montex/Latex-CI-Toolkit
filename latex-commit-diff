@@ -69,3 +69,4 @@ for REFCOMMIT in $BASELINE; do
     mv ${FILE}_diff.pdf diffoutput;
   done;
 done;
+mv diffoutput/* .;
