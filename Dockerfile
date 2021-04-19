@@ -17,6 +17,7 @@ RUN echo 'deb http://ftp.br.debian.org/debian/ buster main contrib non-free' > /
 	biber \
 	git \
 	latexmk \
-	latexdiff && \
+	latexdiff \
+	inkscape && \
 	apt-get --purge remove -y .\*-doc$ && apt-get clean -y
 COPY latex-commit-diff /usr/local/bin
