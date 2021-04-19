@@ -35,7 +35,7 @@ cp -a . $TEMPDIR
 cd $TEMPDIR
 
 if [ ! $TEXFILES ]; then export TEXFILES=(*.tex); fi;
-export FILENAMES=${TEXFILES[@]/.tex}
+export FILENAMES=${TEXFILES[@]//.tex}
 export PREVIOUSTAG=`git describe --abbrev=0 --tags --always`
 
 # If the reference commit is not specified as a CI variable
