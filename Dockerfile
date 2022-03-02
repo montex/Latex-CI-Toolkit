@@ -1,6 +1,6 @@
-FROM debian:stable-slim
+FROM debian:bullseye-slim
 
-RUN echo 'deb http://ftp.br.debian.org/debian/ buster main contrib non-free' > /etc/apt/sources.list.d/backports.list && \
+RUN echo 'deb http://deb.debian.org/debian/ bullseye main contrib non-free' > /etc/apt/sources.list && \
 	apt-get update && apt-get install -y \
 	texlive-base \
 	texlive-science \
