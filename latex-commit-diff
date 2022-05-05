@@ -21,12 +21,13 @@
 #           changes for each of them. It nothing is specified, all the .tex files in the
 #           repository root are processed.
 #
-# EXTRAOPT: Additional options to be passed to the latexmk command. Useful when compiling
-#           files that require specific configurations.
+# LDAPPEND: Extra options to be appended to the latexdiff command. This can be useful
+#           for processing LaTeX filex with complex features that would otherwise generate
+#           errors. The special value 'SAFE' makes the script use an alternate configuration
+#           for handling tablular and other special environments.
 
 DIFFREFCONFIGFILE=".diffref";
-OPTIONS="-cd -interaction=nonstopmode -f -pdf $EXTRAOPT";
-if [ $SKIPBIB ]; then OPTIONS="-bibtex- $OPTIONS"; fi;
+LDSAFE='--config="PICTUREENV=(?:picture|DIFnomarkup|align|tabular|tabularx)'
 
 # create temp directory and copy the repository
 MYDIR=$(pwd)
@@ -35,8 +36,10 @@ echo $TEMPDIR
 cp -a . $TEMPDIR
 cd $TEMPDIR
 
+if [ "$LDAPPEND" == "SAFE" ]; then export LDAPPEND=$LDSAFE; fi;
+
 if [ ! $TEXFILES ]; then export TEXFILES=(*.tex); fi;
-export FILENAMES=${TEXFILES[@]//.tex}
+export FILENAMES=${TEXFILES[@]/.tex}
 export PREVIOUSTAG=`git describe --abbrev=0 --tags --always`
 
 # If the reference commit is not specified as a CI variable
@@ -58,7 +61,7 @@ fi;
 for FILE in ${FILENAMES[@]}; do
   latexpand $FILE.tex > ${FILE}.tex.expanded;
   mv ${FILE}.tex.expanded ${FILE}.tex;
-  latexmk $OPTIONS $FILE;
+  latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
 done;
 mkdir diffoutput;
 for REFCOMMIT in $BASELINE; do
@@ -68,16 +71,15 @@ for REFCOMMIT in $BASELINE; do
   for FILE in ${FILENAMES[@]}; do
     latexpand $FILE.tex > ${FILE}.tex.expanded;
     mv ${FILE}.tex.expanded ${FILE}.tex;
-    latexmk $OPTIONS $FILE;
+    latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
   done
   cd ..;
   for FILE in ${FILENAMES[@]}; do
-    latexdiff ${REFCOMMIT}/${FILE}.tex ${FILE}.tex > ${FILE}_diff_${REFCOMMIT}.tex;
-    latexmk $OPTIONS ${FILE}_diff_${REFCOMMIT}.tex;
+    latexdiff $LDAPPEND ${REFCOMMIT}/${FILE}.tex ${FILE}.tex > ${FILE}_diff_${REFCOMMIT}.tex;
     if [ ! $SKIPBIB ]; then
-      latexdiff ${REFCOMMIT}/${FILE}.bbl ${FILE}.bbl > ${FILE}_diff_${REFCOMMIT}.bbl;
+      latexdiff $LDAPPEND ${REFCOMMIT}/${FILE}.bbl ${FILE}.bbl > ${FILE}_diff_${REFCOMMIT}.bbl;
     fi;
-    latexmk -bibtex- $OPTIONS ${FILE}_diff_${REFCOMMIT}.tex;
+    latexmk -cd -bibtex- -interaction=nonstopmode -f -pdf ${FILE}_diff_${REFCOMMIT}.tex;
     ln -f ${FILE}_diff_${REFCOMMIT}.pdf ${FILE}_diff.pdf;
     mv ${FILE}_diff_${REFCOMMIT}.pdf diffoutput;
     mv ${FILE}_diff.pdf diffoutput;
