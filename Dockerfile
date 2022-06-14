@@ -12,6 +12,7 @@ RUN echo 'deb http://deb.debian.org/debian/ bullseye main contrib non-free' > /e
 	texlive-lang-english \
 	texlive-lang-italian \
 	texlive-lang-portuguese \
+	texlive-font-utils \
 	texlive-fonts-extra \
 	ttf-xfree86-nonfree\
 	biber \
