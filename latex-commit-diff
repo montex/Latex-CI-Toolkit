@@ -30,8 +30,8 @@ DIFFREFCONFIGFILE=".diffref";
 LDSAFE='--config="PICTUREENV=(?:picture|DIFnomarkup|align|tabular|tabularx)'
 
 # create temp directory and copy the repository
-MYDIR=$(pwd)
-TEMPDIR=$(mktemp -d)
+MYDIR="$(pwd)"
+TEMPDIR="$(mktemp -d)"
 echo $TEMPDIR
 cp -a . $TEMPDIR
 cd $TEMPDIR
@@ -39,7 +39,7 @@ cd $TEMPDIR
 if [ "$LDAPPEND" == "SAFE" ]; then export LDAPPEND=$LDSAFE; fi;
 
 if [ ! $TEXFILES ]; then export TEXFILES=(*.tex); fi;
-export FILENAMES=${TEXFILES[@]/.tex}
+export FILENAMES="${TEXFILES[@]/.tex}"
 export PREVIOUSTAG=`git describe --abbrev=0 --tags --always`
 
 # If the reference commit is not specified as a CI variable
@@ -59,32 +59,32 @@ if [ ! $BASELINE ]; then
 fi;
 
 for FILE in ${FILENAMES[@]}; do
-  latexpand $FILE.tex > ${FILE}.tex.expanded;
-  mv ${FILE}.tex.expanded ${FILE}.tex;
-  latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
+  latexpand "$FILE.tex" > "${FILE}.tex.expanded";
+  mv "${FILE}.tex.expanded" "${FILE}.tex";
+  latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf "$FILE";
 done;
 mkdir diffoutput;
 for REFCOMMIT in $BASELINE; do
   git clone . $REFCOMMIT;
   cd $REFCOMMIT;
   git checkout $REFCOMMIT;
-  for FILE in ${FILENAMES[@]}; do
+  for FILE in "${FILENAMES[@]}"; do
     latexpand $FILE.tex > ${FILE}.tex.expanded;
-    mv ${FILE}.tex.expanded ${FILE}.tex;
-    latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf $FILE;
+    mv "${FILE}.tex.expanded" "${FILE}.tex";
+    latexmk -cd -bibtex-cond -interaction=nonstopmode -f -pdf "$FILE";
   done
   cd ..;
-  for FILE in ${FILENAMES[@]}; do
-    latexdiff $LDAPPEND ${REFCOMMIT}/${FILE}.tex ${FILE}.tex > ${FILE}_diff_${REFCOMMIT}.tex;
+  for FILE in "${FILENAMES[@]}"; do
+    latexdiff $LDAPPEND "${REFCOMMIT}/${FILE}.tex" "${FILE}.tex" > "${FILE}_diff_${REFCOMMIT}.tex";
     if [ ! $SKIPBIB ]; then
-      latexdiff $LDAPPEND ${REFCOMMIT}/${FILE}.bbl ${FILE}.bbl > ${FILE}_diff_${REFCOMMIT}.bbl;
+      latexdiff $LDAPPEND "${REFCOMMIT}/${FILE}.bbl" "${FILE}.bbl" > "${FILE}_diff_${REFCOMMIT}.bbl";
     fi;
-    latexmk -cd -bibtex- -interaction=nonstopmode -f -pdf ${FILE}_diff_${REFCOMMIT}.tex;
-    ln -f ${FILE}_diff_${REFCOMMIT}.pdf ${FILE}_diff.pdf;
-    mv ${FILE}_diff_${REFCOMMIT}.pdf diffoutput;
-    mv ${FILE}_diff.pdf diffoutput;
+    latexmk -cd -bibtex- -interaction=nonstopmode -f -pdf "${FILE}_diff_${REFCOMMIT}.tex";
+    ln -f "${FILE}_diff_${REFCOMMIT}.pdf" "${FILE}_diff.pdf";
+    mv "${FILE}_diff_${REFCOMMIT}.pdf" "diffoutput";
+    mv "${FILE}_diff.pdf" "diffoutput";
   done;
 done;
 
-mv $TEMPDIR/diffoutput/* $MYDIR
-cd $MYDIR
+mv $TEMPDIR/diffoutput/* "$MYDIR"
+cd "$MYDIR"
