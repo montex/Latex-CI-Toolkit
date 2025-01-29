@@ -1,7 +1,10 @@
 FROM debian:bullseye-slim
 
-RUN echo 'deb http://deb.debian.org/debian/ bullseye main contrib non-free' > /etc/apt/sources.list && \
-	apt-get update && apt-get install -y \
+RUN printf 'deb http://deb.debian.org/debian/ bullseye main contrib non-free\n\
+deb http://deb.debian.org/debian bullseye-updates main contrib non-free\n\
+deb http://deb.debian.org/debian bullseye-backports main contrib non-free\n\
+deb http://security.debian.org/debian-security/ bullseye-security main contrib non-free' > /etc/apt/sources.list
+RUN apt-get update && apt-get install -y \
 	texlive-base \
 	texlive-science \
 	texlive-publishers \
