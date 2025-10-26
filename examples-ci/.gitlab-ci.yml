@@ -1,0 +1,72 @@
+# This script automatically compiles the latex sources present in a GitLab
+# repository, and produces a document showing changes with respect to a
+# specific commit.
+#
+# Using this script on GitLab.com, the compiled document is made available as
+# artifact at:
+# - https://gitlab.com/[username]/[repo]/-/jobs/artifacts/master/file/[filename].pdf?job=pdf
+# and the document with changebars at:
+# - https://gitlab.com/[username]/[repo]/-/jobs/artifacts/master/file/[filename]_diff.pdf?job=diff-baseline
+#
+# The script accepts the following variables:
+# - TEXFILES
+# Filenames of the latex source to compile.
+# If not specified, all the .tex files in the repository root will be processed.
+# - TEXDIR
+# Directory where the $TEXFILES are located.
+# If not specified, the root of the repository is considered.
+# - BASELINE
+# Base commit for producing the document with changebars.
+# If not specified, the previous tag in the history will be used.
+# - SKIPBIB
+# If defined, differences in the bibliography will not be computed. This can
+# be useful when diff'ing the bibliography produces compilation errors.
+stages:
+  - compile
+  - changebars
+
+# Create the plain PDF document(s)
+pdf:
+  stage: compile
+  image: registry.gitlab.com/montex/latex-ci
+  script:
+    - if [ ! $TEXFILES ]; then export TEXFILES=(*.tex); fi;
+    - for FILE in ${TEXFILES[@]}; do
+        latexmk -pdf $FILE;
+      done;
+  artifacts:
+    paths:
+      - "*.pdf"
+
+# Create a PDF with changebars with respect to the baseline version.
+# For each processed .tex file two .pdf files will be created: one with
+# a fixed name (useful for linking it from static files like the README),
+# and one with the hash of the reference commit appended to the name.
+diff-baseline:
+  stage: changebars
+  image: registry.gitlab.com/montex/latex-ci
+  allow_failure: true
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
+  script:
+    - latex-commit-diff
+  artifacts:
+    paths:
+      - "*_diff*.pdf"
+
+# Create a PDF with changebars with respect to the baseline version.
+# For each processed .tex file two .pdf files will be created: one with
+# a fixed name (useful for linking it from static files like the README),
+# and one with the hash of the reference commit appended to the name.
+diff-previous:
+  stage: changebars
+  image: registry.gitlab.com/montex/latex-ci
+  when: manual
+  script:
+    - export BASELINE=`git rev-parse --short HEAD~1`;
+      latex-commit-diff;
+  artifacts:
+    paths:
+      - "*_diff*.pdf"
+
