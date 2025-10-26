@@ -1,30 +1,33 @@
 #!/bin/bash
-# Copyright (C) 2019
+# Copyright (C) 2019-2025
 # Leonardo Montecchi
-# leonardo@ic.unicamp.br
+# leonardo.montecchi@ntnu.no
 #
 # [latex-commit-diff]
-# A simple bash script to automate the generation of pdf with tracked changes from
-# a git repository containing latex files. It uses (and thus requires) latexdiff.
+# A simple bash script to automate the generation of pdf with tracked changes
+# from a git repository containing latex files.
+# It uses (and thus requires) latexdiff.
 #
-# The script is thought to be used in GitLab CI environment. As such, it receives
-# parameters by means of environment variables. The following parameters are supported:
+# The script was created for being used in a CI environment. As such, it
+# receives parameters through environment variables.
+# The following parameters are supported:
 #
-# BASELINE: The list of commits or tags that should be used as reference for creating the
-#           diff (i.e., the commit(s) containing the old version(s)). If more than one
-#           commit is specified, the script will create a pdf with tracked changes for
-#           each of them. If nothing is specified, the previous tag in the reposiory will
-#           be used as reference.
+# BASELINE: The list of commits or tags to be used as reference for creating
+#           the diff (i.e., the commit(s) containing the old version(s)). If
+#           more than one commit is specified, the script will create a pdf
+#           with tracked changes for each of them. If nothing is specified, the
+#           previous tag in the repository will be used as reference.
 #
-# TEXFILES: The list of TeX files for which the pdf with tracked changes will be generated.
-#           If more than one file is specified, the script will create a pdf with tracked
-#           changes for each of them. It nothing is specified, all the .tex files in the
-#           repository root are processed.
+# TEXFILES: The list of TeX files for which the pdf with tracked changes will
+#           be generated. If more than one file is specified, the script will
+#           create a pdf with tracked changes for each of them. If nothing is
+#           specified, all the .tex files in the current folder are processed.
 #
-# LDAPPEND: Extra options to be appended to the latexdiff command. This can be useful
-#           for processing LaTeX filex with complex features that would otherwise generate
-#           errors. The special value 'SAFE' makes the script use an alternate configuration
-#           for handling tablular and other special environments.
+# LDAPPEND: Extra options to be appended to the latexdiff command. This can be
+#           useful for processing LaTeX files with complex features that would
+#           otherwise generate errors. The special value 'SAFE' makes the
+#           script use an alternate configuration for handling tablular and
+#           other special environments.
 
 DIFFREFCONFIGFILE=".diffref";
 LDSAFE='--config="PICTUREENV=(?:picture|DIFnomarkup|align|tabular|tabularx)'
